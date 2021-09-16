@@ -6,6 +6,7 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -27,17 +28,6 @@ class MainActivity : AppCompatActivity(), MainView, View.OnClickListener,
 
     //presenter
     private lateinit var presenter: MainPresenter
-
-    //flag
-//    private var onTranslating: Boolean = false
-//    private var onScaling: Boolean = false
-//    private var onFading: Boolean = false
-    private var onRotating: Boolean = false
-    private var onChangingColor: Boolean = false
-
-    //animator
-    private lateinit var translatingAnimator: ObjectAnimator
-    private lateinit var coloringAnimator: ValueAnimator
 
     //drawer listener
     private lateinit var drawerListenerTranslate: DrawerLayout.DrawerListener
@@ -99,8 +89,24 @@ class MainActivity : AppCompatActivity(), MainView, View.OnClickListener,
                     1f,
                     1000
                 )
-            binding.btnRotate -> rotate()
-            binding.btnColor -> changeColor()
+            binding.btnRotate -> {
+                presenter.rotate(
+                    binding.textView,
+                    0f,
+                    360f,
+                    1000
+                )
+            }
+            binding.btnColor -> {
+                presenter.changeColor(
+                    binding.textView,
+                    Color.parseColor("#FFFF0000"),
+                    Color.parseColor("#FF0000FF"),
+                    2000,
+                    ObjectAnimator.INFINITE,
+                    ObjectAnimator.REVERSE
+                )
+            }
             //intent buttons
             binding.btnIntentTranslate -> intentWithAnimation(Constants.TRANSLATE)
             binding.btnIntentScale -> intentWithAnimation(Constants.SCALE)
@@ -114,7 +120,7 @@ class MainActivity : AppCompatActivity(), MainView, View.OnClickListener,
             //drawer view
             binding.included.btnDrawerTranslate -> {
                 if (isChecked) {
-                    translateDrawer()
+                    presenter.addDrawerListener(binding.drawerLayout, Constants.TRANSLATE)
                 } else {
                     presenter.removeDrawerListener(binding.drawerLayout, drawerListenerTranslate)
                 }
@@ -157,43 +163,21 @@ class MainActivity : AppCompatActivity(), MainView, View.OnClickListener,
 
     override fun FadeTextView(anim: ObjectAnimator) {
         anim.start()
-//        if (!onFading) {
-//            presenter.getFadingOutAnimator(binding.textView, 0.5f, 1000)
-//        } else {
-//            presenter.getFadingInAnimator(binding.textView, 0.5f, 1000)
-//        }
-//        onFading = !onFading
     }
 
-    override fun rotate() {
-        if (!onRotating) {
-            val rotateAnimation = presenter.getRotatingAnimation(0f, 360f, 1000)
-            binding.textView.startAnimation(rotateAnimation)
-        } else {
-            val rotateAnimation = presenter.getRotatingAnimation(360f, 0f, 1000)
-            binding.textView.startAnimation(rotateAnimation)
-        }
-        onRotating = !onRotating
+    override fun rotateTextView(anim: ObjectAnimator) {
+        anim.start()
     }
 
-    override fun changeColor() {
-        if (!onChangingColor) {
-            coloringAnimator = presenter.getColoringAnimator(
-                binding.textView,
-                resources.getColor(android.R.color.holo_orange_dark),
-                resources.getColor(android.R.color.holo_red_light),
-                1000
-            )
-        } else {
-            coloringAnimator.cancel()
-        }
-        onChangingColor = !onChangingColor
+    override fun changeTextViewColor(anim: ObjectAnimator) {
+        anim.start()
     }
 
-    override fun translateDrawer() {
-        drawerListenerTranslate =
-            presenter.getDrawerListener(binding.contentView, Constants.TRANSLATE)
-        binding.drawerLayout.addDrawerListener(drawerListenerTranslate)
+    override fun translateDrawer(drawerListener: DrawerLayout.DrawerListener) {
+//        drawerListenerTranslate =
+//            presenter.getDrawerListener(binding.contentView, Constants.TRANSLATE)
+//        binding.drawerLayout.addDrawerListener(drawerListenerTranslate)
+        binding.drawerLayout.addDrawerListener(drawerListener)
     }
 
     override fun scaleUpDownDrawer() {

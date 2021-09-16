@@ -1,15 +1,9 @@
 package com.example.animationsample.main.presenter
 
-import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
 import android.animation.ValueAnimator
-import android.content.Intent
 import android.util.Log
 import android.view.View
-import android.view.animation.Animation
-import android.view.animation.RotateAnimation
-import android.widget.TextView
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.animationsample.main.common.Constants
 import com.example.animationsample.main.util.AnimationUtil
@@ -24,6 +18,8 @@ class MainPresenter(view: MainView) {
     private var translatingAnimator: ObjectAnimator? = null
     private var scalingAnimtor: ValueAnimator? = null
     private var fadingAnimator: ObjectAnimator? = null
+    private var rotatingAnimator: ObjectAnimator? = null
+    private var coloringAnimator: ObjectAnimator? = null
 
     //flag
     private var onTranslating: Boolean = false
@@ -64,11 +60,10 @@ class MainPresenter(view: MainView) {
     ) {
         if (!onScaling) {
             scalingAnimtor = animationUtil.getScalingAnimator(view, scaleFrom, scaleTo, duration)
-            this.view.scaleTextView(scalingAnimtor!!)
         } else {
             scalingAnimtor = animationUtil.getScalingAnimator(view, scaleTo, scaleFrom, duration)
-            this.view.scaleTextView(scalingAnimtor!!)
         }
+        this.view.scaleTextView(scalingAnimtor!!)
         onScaling = !onScaling
     }
 
@@ -79,65 +74,60 @@ class MainPresenter(view: MainView) {
         toDegree: Float,
         duration: Long
     ) {
-        if(!onFading){
+        if (!onFading) {
             fadingAnimator = animationUtil.getFadingAnimator(view, fromDegree, toDegree, duration)
-            this.view.FadeTextView(fadingAnimator!!)
-        }else{
+        } else {
             fadingAnimator = animationUtil.getFadingAnimator(view, toDegree, fromDegree, duration)
-            this.view.FadeTextView(fadingAnimator!!)
         }
+        this.view.FadeTextView(fadingAnimator!!)
         onFading = !onFading
     }
-//
-//    fun rotate(
-//        view: View,
-//        fromDegree: Float,
-//        toDegree: Float,
-//        duration: Long
-//    ){
-//        if(!onRotating){
-//
-//        }else{
-//
-//        }
-//    }
 
-    //Animation
-    fun getRotatingAnimation(
+    fun rotate(
+        view: View,
         fromDegree: Float,
         toDegree: Float,
         duration: Long
-    ): Animation {
-        return RotateAnimation(
-            fromDegree,
-            toDegree,
-            Animation.RELATIVE_TO_SELF,
-            0.5f,
-            Animation.RELATIVE_TO_SELF,
-            0.5f
-        ).apply {
-            this.duration = duration
+    ) {
+        if (!onRotating) {
+            rotatingAnimator =
+                animationUtil.getRotatingAnimator(view, fromDegree, toDegree, duration)
+        } else {
+            rotatingAnimator =
+                animationUtil.getRotatingAnimator(view, toDegree, fromDegree, duration)
         }
+        this.view.rotateTextView(rotatingAnimator!!)
+        onRotating = !onRotating
     }
 
-    //Value Animator
-    fun getColoringAnimator(
-        textView: TextView,
+    fun changeColor(
+        view: View,
         colorFrom: Int,
         colorTo: Int,
-        duration: Long
-    ): ValueAnimator {
-        return ValueAnimator.ofObject(ArgbEvaluator(), colorFrom, colorTo).apply {
-            this.addUpdateListener { animation ->
-                if (animation != null) {
-                    textView.setTextColor(animation.animatedValue as Int)
-                }
-            }
-            this.repeatCount = ValueAnimator.INFINITE
-            this.repeatMode = ValueAnimator.REVERSE
-            this.duration = duration
-            this.start()
+        duration: Long,
+        repeatCount: Int,
+        repeatMode: Int
+    ) {
+        if (!onChangingColor) {
+            coloringAnimator =
+                animationUtil.getColorChangingAnimator(
+                    view,
+                    colorFrom,
+                    colorTo,
+                    duration,
+                    repeatCount,
+                    repeatMode
+                )
+            this.view.changeTextViewColor(coloringAnimator!!)
+        } else {
+            this.view.cancelAnimator(coloringAnimator!!)
         }
+        onChangingColor = !onChangingColor
+    }
+
+    fun addDrawerListener(contentView: View, listenerType: Int){
+        val drawerListener = animationUtil.getDrawerListener(contentView, listenerType)
+        this.view.translateDrawer(drawerListener)
     }
 
     // drawer Animation
@@ -222,9 +212,6 @@ class MainPresenter(view: MainView) {
         drawerLayout: DrawerLayout,
         drawerListener: DrawerLayout.DrawerListener
     ) {
-
-
         drawerLayout.removeDrawerListener(drawerListener)
-
     }
 }
